@@ -5,14 +5,14 @@
 ### Opção 1: Instalação Direta
 
 ```bash
-cd /home/luciano/Documents/shell-install-applications-script
+cd shell-install-applications-script
 sudo ./install_wazuh.sh
 ```
 
 ### Opção 2: Via Menu Interativo
 
 ```bash
-cd /home/luciano/Documents/shell-install-applications-script
+cd shell-install-applications-script
 sudo ./installer.sh
 # Digite: 3
 ```
