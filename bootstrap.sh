@@ -2,11 +2,11 @@
 #==============================================================================
 # bootstrap.sh — instalação rápida a partir do GitHub
 #
-# Baixa este repositório para /opt/shell-install-applications-script e executa
+# Baixa este repositório para /opt/linux-agents-bootstrap e executa
 # o instalador. Não grava credenciais e não altera nada antes de baixar.
 #
 # Uso (a forma mais simples):
-#   curl -fsSL https://raw.githubusercontent.com/stormcrow94/shell-install-applications-script/main/bootstrap.sh -o /tmp/bootstrap.sh
+#   curl -fsSL https://raw.githubusercontent.com/stormcrow94/linux-agents-bootstrap/main/bootstrap.sh -o /tmp/bootstrap.sh
 #   sudo bash /tmp/bootstrap.sh
 #
 # Execução direta de uma etapa:
@@ -24,16 +24,16 @@
 # Opções:
 #   --repo <owner/repo>   Repositório alternativo (padrão: stormcrow94/...)
 #   --branch <nome>       Branch alternativo (padrão: main)
-#   --dir <caminho>       Destino (padrão: /opt/shell-install-applications-script)
+#   --dir <caminho>       Destino (padrão: /opt/linux-agents-bootstrap)
 #==============================================================================
 
 set -uo pipefail
 
 ORIG_ARGS=("$@")
 
-REPO="${REPO:-stormcrow94/shell-install-applications-script}"
+REPO="${REPO:-stormcrow94/linux-agents-bootstrap}"
 BRANCH="${BRANCH:-main}"
-RUN_DIR="${RUN_DIR:-/opt/shell-install-applications-script}"
+RUN_DIR="${RUN_DIR:-/opt/linux-agents-bootstrap}"
 MODE="menu"
 KEEP_SETTINGS=0
 DOWNLOAD_ONLY=0
@@ -64,7 +64,7 @@ Modos:
 Opções:
   --repo <owner/repo>   repositório alternativo
   --branch <nome>       branch alternativo (padrão: main)
-  --dir <caminho>       destino (padrão: /opt/shell-install-applications-script)
+  --dir <caminho>       destino (padrão: /opt/linux-agents-bootstrap)
   --keep-settings       preserva config/settings.conf já existente
   --download-only       baixa os arquivos e não executa nada
   -h, --help            esta ajuda

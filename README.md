@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="shell-install-applications-script — provisionamento de servidores Linux via Bash" width="100%">
+  <img src="assets/banner.png" alt="linux-agents-bootstrap — provisionamento de servidores Linux via Bash" width="100%">
 </p>
 
 <p align="center">
@@ -8,7 +8,7 @@
   <img alt="Distros" src="https://img.shields.io/badge/distros-Ubuntu%20%7C%20Debian%20%7C%20RHEL%20%7C%20Rocky%20%7C%20Alma%20%7C%20CentOS-informational">
   <img alt="Zabbix 7.0" src="https://img.shields.io/badge/Zabbix%20Agent-7.0-D40000">
   <img alt="Wazuh 4.14" src="https://img.shields.io/badge/Wazuh%20Agent-4.14.0-00A9E5">
-  <a href="https://github.com/stormcrow94/shell-install-applications-script/commits/main"><img alt="Último commit" src="https://img.shields.io/github/last-commit/stormcrow94/shell-install-applications-script"></a>
+  <a href="https://github.com/stormcrow94/linux-agents-bootstrap/commits/main"><img alt="Último commit" src="https://img.shields.io/github/last-commit/stormcrow94/linux-agents-bootstrap"></a>
 </p>
 
 # Shell Install Applications Script
@@ -45,7 +45,7 @@ monitoramento (Zabbix Agent), segurança (Wazuh Agent e Sophos), ingresso no Act
 | Active Directory | `register_domain.sh` | Valida DNS/SRV, relógio e portas, faz `realm join`, configura SSSD, acesso por grupo (SSH) e sudo |
 | Hostname | `hostname.sh` | Altera o hostname via `hostnamectl` e atualiza `/etc/hosts` (linha `127.0.1.1`) |
 | Menu | `installer.sh` | Menu interativo que chama os scripts acima, inclusive em sequência (modo completo) |
-| Bootstrap | `bootstrap.sh` | Baixa o repositório para `/opt/shell-install-applications-script` e abre o menu ou uma etapa |
+| Bootstrap | `bootstrap.sh` | Baixa o repositório para `/opt/linux-agents-bootstrap` e abre o menu ou uma etapa |
 
 ## Recursos
 
@@ -85,7 +85,7 @@ monitoramento (Zabbix Agent), segurança (Wazuh Agent e Sophos), ingresso no Act
 ### Opção 1 — servidor novo, sem clonar (bootstrap)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/stormcrow94/shell-install-applications-script/main/bootstrap.sh -o /tmp/bootstrap.sh
+curl -fsSL https://raw.githubusercontent.com/stormcrow94/linux-agents-bootstrap/main/bootstrap.sh -o /tmp/bootstrap.sh
 less /tmp/bootstrap.sh          # revise antes de executar como root
 sudo bash /tmp/bootstrap.sh     # abre o menu
 ```
@@ -102,7 +102,7 @@ sudo bash /tmp/bootstrap.sh --domain     # ou --zabbix, --wazuh, --sophos, --hos
 | `--domain`, `--zabbix`, `--wazuh`, `--sophos`, `--hostname` | Executa somente a etapa escolhida |
 | `--repo <owner/repo>` | Repositório alternativo (fork) |
 | `--branch <nome>` | Branch alternativo (padrão: `main`) |
-| `--dir <caminho>` | Destino (padrão: `/opt/shell-install-applications-script`) |
+| `--dir <caminho>` | Destino (padrão: `/opt/linux-agents-bootstrap`) |
 | `--keep-settings` | Preserva um `config/settings.conf` já ajustado no destino |
 | `--download-only` | Apenas baixa os arquivos, sem executar nada |
 | `-h`, `--help` | Ajuda |
@@ -112,8 +112,8 @@ sudo bash /tmp/bootstrap.sh --domain     # ou --zabbix, --wazuh, --sophos, --hos
 ### Opção 2 — clonando o repositório
 
 ```bash
-git clone https://github.com/stormcrow94/shell-install-applications-script.git
-cd shell-install-applications-script
+git clone https://github.com/stormcrow94/linux-agents-bootstrap.git
+cd linux-agents-bootstrap
 chmod +x *.sh lib/common.sh
 sudo ./installer.sh
 ```

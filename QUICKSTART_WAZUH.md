@@ -5,14 +5,14 @@
 ### Opção 1: Instalação Direta
 
 ```bash
-cd shell-install-applications-script
+cd linux-agents-bootstrap
 sudo ./install_wazuh.sh
 ```
 
 ### Opção 2: Via Menu Interativo
 
 ```bash
-cd shell-install-applications-script
+cd linux-agents-bootstrap
 sudo ./installer.sh
 # Digite: 3
 ```

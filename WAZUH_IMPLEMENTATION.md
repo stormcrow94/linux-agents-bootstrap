@@ -2,7 +2,7 @@
 
 ## 📋 Visão Geral
 
-Este documento resume a implementação completa do suporte ao Wazuh Agent no projeto shell-install-applications-script.
+Este documento resume a implementação completa do suporte ao Wazuh Agent no projeto linux-agents-bootstrap.
 
 **Data**: 2025-11-07  
 **Versão**: 2.1.0  
@@ -273,7 +273,7 @@ O script utiliza as seguintes funções de `lib/common.sh`:
 
 1. **Testar a instalação**:
    ```bash
-   cd shell-install-applications-script
+   cd linux-agents-bootstrap
    sudo ./install_wazuh.sh
    ```
 

@@ -6,8 +6,8 @@ Guia de 5 minutos para começar a usar os scripts.
 
 ```bash
 # 1. Clonar repositório
-git clone https://github.com/seu-usuario/shell-install-applications-script.git
-cd shell-install-applications-script
+git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+cd linux-agents-bootstrap
 
 # 2. Tornar executável
 chmod +x installer.sh

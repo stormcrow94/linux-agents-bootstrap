@@ -1,4 +1,4 @@
-shell-install-applications-script/
+linux-agents-bootstrap/
 |
 |-- installer.sh                 # Menu principal interativo
 |-- bootstrap.sh                 # Instalacao em um comando a partir do GitHub

@@ -48,7 +48,7 @@ Coleção profissional de scripts em Bash para automatizar a instalação e conf
 ### Estrutura do Projeto
 
 ```
-shell-install-applications-script/
+linux-agents-bootstrap/
 ├── installer.sh                    # Menu principal (RECOMENDADO)
 ├── install_zabbix.sh               # Instalação do Zabbix (unificado)
 ├── install_wazuh.sh                # Instalação do Wazuh (unificado)

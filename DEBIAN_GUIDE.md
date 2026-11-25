@@ -15,8 +15,8 @@ Este guia mostra como usar os scripts em sistemas Debian 11 e 12.
 
 ```bash
 # Clonar repositório
-git clone https://github.com/seu-usuario/shell-install-applications-script.git
-cd shell-install-applications-script
+git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+cd linux-agents-bootstrap
 
 # Executar menu
 sudo ./installer.sh
@@ -287,8 +287,8 @@ for server in "${SERVERS[@]}"; do
     echo "Configurando $server..."
     ssh root@$server "
         cd /tmp
-        git clone https://github.com/seu-usuario/shell-install-applications-script.git
-        cd shell-install-applications-script
+        git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+        cd linux-agents-bootstrap
         ./install_zabbix.sh $ZABBIX_SERVER
     "
 done
@@ -308,7 +308,7 @@ done
   tasks:
     - name: Clonar repositório de scripts
       git:
-        repo: 'https://github.com/seu-usuario/shell-install-applications-script.git'
+        repo: 'https://github.com/seu-usuario/linux-agents-bootstrap.git'
         dest: /opt/install-scripts
         update: yes
     

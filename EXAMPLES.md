@@ -139,8 +139,8 @@ resource "null_resource" "configure_server" {
   provisioner "remote-exec" {
     inline = [
       "cd /tmp",
-      "git clone https://github.com/seu-usuario/shell-install-applications-script.git",
-      "cd shell-install-applications-script",
+      "git clone https://github.com/seu-usuario/linux-agents-bootstrap.git",
+      "cd linux-agents-bootstrap",
       "chmod +x *.sh",
       "./install_zabbix.sh ${var.zabbix_server}",
       "./install_wazuh.sh ${var.wazuh_manager}",
@@ -312,15 +312,15 @@ tail -5 $LOG_DIR/installer_*.log 2>/dev/null | grep -E "SUCCESS|ERROR"
 # Ubuntu
 docker run -it --rm ubuntu:24.04 bash
 apt-get update && apt-get install -y git sudo
-git clone https://github.com/seu-usuario/shell-install-applications-script.git
-cd shell-install-applications-script
+git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+cd linux-agents-bootstrap
 ./installer.sh
 
 # Rocky Linux
 docker run -it --rm rockylinux:9 bash
 dnf install -y git sudo
-git clone https://github.com/seu-usuario/shell-install-applications-script.git
-cd shell-install-applications-script
+git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+cd linux-agents-bootstrap
 ./installer.sh
 ```
 
@@ -338,8 +338,8 @@ for distro in "${TEST_DISTROS[@]}"; do
     docker run --rm $distro bash -c "
         apt-get update 2>/dev/null || dnf install -y 2>/dev/null
         cd /tmp
-        git clone https://github.com/seu-usuario/shell-install-applications-script.git
-        cd shell-install-applications-script
+        git clone https://github.com/seu-usuario/linux-agents-bootstrap.git
+        cd linux-agents-bootstrap
         ./install_zabbix.sh
     "
     
