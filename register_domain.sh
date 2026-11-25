@@ -209,8 +209,20 @@ done
 if [ ${#missing[@]} -gt 0 ]; then
     log "Instalando: ${missing[*]}"
     case "$PKG_MGR" in
-        apt) apt-get install -y --no-install-recommends "${missing[@]}" \
-                || die "Falha ao instalar pacotes. Verifique repositórios: apt-get update && apt-get install -f" ;;
+        apt)
+            if ! apt-get install -y --no-install-recommends "${missing[@]}"; then
+                # Ubuntu 22.04: deb-systemd-invoke pode falhar no postinst embora o
+                # pacote fique instalado. Confirmar antes de abortar.
+                still_missing=()
+                for p in "${missing[@]}"; do
+                    pkg_installed "$p" || still_missing+=("$p")
+                done
+                if [ ${#still_missing[@]} -gt 0 ]; then
+                    die "Falha ao instalar pacotes: ${still_missing[*]}. Verifique repositórios: apt-get update && apt-get install -f"
+                fi
+                warn "apt-get retornou erro, mas todos os pacotes ficaram instalados (falha conhecida de postinst no Ubuntu 22.04). Continuando."
+            fi
+            ;;
         dnf) dnf install -y "${missing[@]}" \
                 || die "Falha ao instalar pacotes. Verifique repositórios: dnf makecache && dnf install -f" ;;
         yum) yum install -y "${missing[@]}" \
