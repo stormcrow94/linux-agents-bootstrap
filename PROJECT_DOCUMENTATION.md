@@ -134,9 +134,10 @@ Important current limitation:
 | `ZABBIX_AGENT_PORT` | Agent listening port | `10050` |
 | `ZABBIX_DEBUG_LEVEL` | Agent debug level | `3` |
 | `ZABBIX_LOG_SIZE` | Max log size MB | `10` |
-| `ZABBIX_VERSION_UBUNTU` | Zabbix repo version for Ubuntu | `7.0` |
-| `ZABBIX_VERSION_DEBIAN` | Zabbix repo version for Debian | `6.0` |
-| `ZABBIX_VERSION_RHEL` | Zabbix repo version for RHEL-like distros | `6.4` |
+| `ZABBIX_BRANCH` | Zabbix LTS branch (must match server major.minor) | `7.0` |
+| `ZABBIX_AGENT_VERSION` | Agent patch (`latest` = newest in branch via CDN) | `latest` |
+| `ZABBIX_STATIC_AGENT_URL` | Optional full tarball URL override | empty |
+| `ZABBIX_RPM_BRANCH` | Zabbix RPM repo branch for RHEL-like | `7.0` |
 | `WAZUH_MANAGER` | Wazuh manager endpoint | `wazuh.vantix.com.br` |
 | `WAZUH_VERSION` | Wazuh agent version | `4.14.0` |
 | `WAZUH_REVISION` | Wazuh package revision | `1` |
