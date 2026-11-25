@@ -129,6 +129,8 @@ Edite `config/settings.conf` para ajustar parametros como:
 - `ZABBIX_PROXY_SERVER`
 - `ZABBIX_SERVER_PORT`
 - `ZABBIX_AGENT_PORT`
+- `ZABBIX_BRANCH` (major.minor do servidor; hoje `7.0`)
+- `ZABBIX_AGENT_VERSION` (`latest` = ultimo patch do branch no CDN)
 - `WAZUH_MANAGER`
 - `WAZUH_VERSION`
 - `DEFAULT_DOMAIN`

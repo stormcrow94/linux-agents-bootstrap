@@ -27,7 +27,9 @@ else
     ZABBIX_AGENT_PORT="10050"
     ZABBIX_DEBUG_LEVEL="3"
     ZABBIX_LOG_SIZE="10"
-    ZABBIX_STATIC_AGENT_URL="https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.25/zabbix_agent-7.0.25-linux-3.0-amd64-static.tar.gz"
+    ZABBIX_BRANCH="7.0"
+    ZABBIX_AGENT_VERSION="latest"
+    ZABBIX_STATIC_AGENT_URL=""
     ZABBIX_RPM_BRANCH="7.0"
 fi
 
@@ -42,6 +44,52 @@ get_zabbix_pid_file() {
     else
         echo "/run/zabbix/zabbix_agentd.pid"
     fi
+}
+
+# Ultima versao <branch>.x publicada no CDN oficial (ex.: 7.0.32)
+zabbix_latest_patch() {
+    local branch="$1" page ver pattern
+    pattern="$(printf '%s' "$branch" | sed 's/\./\\./g')\.[0-9]+"
+    if command -v curl &>/dev/null; then
+        page=$(curl -fsSL --connect-timeout 10 --max-time 25 "https://cdn.zabbix.com/zabbix/binaries/stable/${branch}/" 2>/dev/null)
+    elif command -v wget &>/dev/null; then
+        page=$(wget -qO- --timeout=25 "https://cdn.zabbix.com/zabbix/binaries/stable/${branch}/" 2>/dev/null)
+    fi
+    [ -n "${page:-}" ] || return 1
+    ver=$(printf '%s\n' "$page" | grep -oE "$pattern" | sort -t. -k3,3n -u | tail -n1)
+    [ -n "$ver" ] || return 1
+    printf '%s' "$ver"
+}
+
+# Resolve a URL do tarball estatico:
+#   1. ZABBIX_STATIC_AGENT_URL, se definido (pin manual)
+#   2. ZABBIX_AGENT_VERSION, se nao for "latest"
+#   3. ultima versao do branch no CDN (padrao)
+resolve_zabbix_static_url() {
+    local branch="${ZABBIX_BRANCH:-7.0}"
+    local version="${ZABBIX_AGENT_VERSION:-latest}"
+    local fallback="7.0.32"
+
+    if [ -n "${ZABBIX_STATIC_AGENT_URL:-}" ]; then
+        printf '%s' "$ZABBIX_STATIC_AGENT_URL"
+        return 0
+    fi
+
+    if [ "$version" = "latest" ]; then
+        version="$(zabbix_latest_patch "$branch")" || version=""
+        if [ -z "$version" ]; then
+            if [ "$branch" = "7.0" ]; then
+                version="$fallback"
+                print_warning "CDN do Zabbix indisponivel; usando $version (ultima conhecida)." >&2
+            else
+                print_error "Nao foi possivel descobrir a ultima versao do branch $branch." >&2
+                return 1
+            fi
+        fi
+    fi
+
+    printf 'https://cdn.zabbix.com/zabbix/binaries/stable/%s/%s/zabbix_agent-%s-linux-3.0-amd64-static.tar.gz' \
+        "$branch" "$version" "$version"
 }
 
 # Remover pacote zabbix-agent do sistema de pacotes, se existir.
@@ -86,7 +134,7 @@ install_zabbix_rhel_from_official_rpm() {
         return 1
     fi
 
-    branch="${ZABBIX_RPM_BRANCH:-7.0}"
+    branch="${ZABBIX_RPM_BRANCH:-${ZABBIX_BRANCH:-7.0}}"
     pkg_mgr=$(get_package_manager)
 
     print_info "Instalando Zabbix Agent via repositório RPM oficial (Zabbix $branch, el$rhel_major)..."
@@ -142,7 +190,11 @@ download_zabbix_tarball() {
 
 # Instalar binários estáticos oficiais e unit systemd (amd64)
 install_zabbix_static_binary() {
-    local url="${ZABBIX_STATIC_AGENT_URL:-https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.25/zabbix_agent-7.0.25-linux-3.0-amd64-static.tar.gz}"
+    local url
+    url="$(resolve_zabbix_static_url)" || {
+        print_error "Nao foi possivel resolver a URL do agente Zabbix (branch ${ZABBIX_BRANCH:-7.0})."
+        return 1
+    }
     local arch
     arch=$(uname -m)
     if [[ "$arch" != "x86_64" ]]; then
@@ -153,7 +205,6 @@ install_zabbix_static_binary() {
 
     print_info "Instalando Zabbix Agent a partir do tarball estático..."
     log_info "Instalação estática Zabbix: $url"
-
     if ! command -v tar &>/dev/null; then
         print_error "Comando tar é necessário para extrair o agente Zabbix"
         return 1
