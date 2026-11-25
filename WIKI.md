@@ -170,9 +170,11 @@ Use `config/settings.conf` para personalizar o comportamento:
 | `ZABBIX_AGENT_PORT` | Porta do agente Zabbix | `10050` |
 | `ZABBIX_DEBUG_LEVEL` | Nível de debug do Zabbix (0-5) | `3` |
 | `ZABBIX_LOG_SIZE` | Tamanho máximo do log (MB) | `10` |
-| `ZABBIX_VERSION_UBUNTU` | Versão Zabbix para Ubuntu | `7.0` |
-| `ZABBIX_VERSION_DEBIAN` | Versão Zabbix para Debian | `6.0` |
-| `ZABBIX_VERSION_RHEL` | Versão Zabbix para RHEL/Rocky/Alma | `6.4` |
+| `ZABBIX_BRANCH` | Branch (major.minor) do Zabbix, igual ao do servidor | `7.0` |
+| `ZABBIX_INSTALL_MODE` | Debian/Ubuntu: `auto`, `package` ou `static` | `auto` |
+| `ZABBIX_AGENT_VERSION` | Versão do tarball estático (`latest` = último patch do branch) | `latest` |
+| `ZABBIX_STATIC_AGENT_URL` | Override da URL do tarball estático (amd64) | vazio |
+| `ZABBIX_RPM_BRANCH` | Branch do repositório RPM em RHEL e derivados | `7.0` |
 | `WAZUH_MANAGER` | Endereço do Wazuh Manager | `wazuh.vantix.com.br` |
 | `WAZUH_VERSION` | Versão do Wazuh Agent | `4.14.0` |
 | `WAZUH_REVISION` | Revisão do pacote do Wazuh | `1` |
@@ -181,8 +183,9 @@ Use `config/settings.conf` para personalizar o comportamento:
 | `DEFAULT_ADMIN_USER` | Usuário administrador padrão | vazio |
 | `DOMAIN_COMPUTER_NAME` | Nome NetBIOS (15 chars) | vazio |
 | `LOG_DIR` | Diretório dos logs | `./logs` |
-| `AUTO_BACKUP` | Backup automático | `true` |
-| `NETWORK_TIMEOUT` | Timeout para rede (s) | `30` |
+| `CHECK_INTERNET` | Testa conectividade (ping 8.8.8.8) antes de instalar | `true` |
+| `AUTO_BACKUP` | Reservado (ainda não lido pelos scripts) | `true` |
+| `NETWORK_TIMEOUT` | Reservado (ainda não lido pelos scripts) | `30` |
 | `CHECK_INTERNET` | Verifica conectividade | `true` |
 | `EXECUTION_MODE` | Modo (`interactive`/`silent`) | `interactive` |
 | `CONTINUE_ON_WARNING` | Prosseguir em avisos | `true` |
@@ -226,12 +229,12 @@ Logs detalhados ajudam a identificar falhas; use `VERBOSE_MODE="true"` para depu
 | --- | --- | --- | --- |
 | Ubuntu | 20.04+ | ✅ Testado | 7.0 |
 | Ubuntu | 24.04 | ✅ Testado | 7.0 |
-| Debian | 11 | ✅ Suportado | 6.0 |
-| Debian | 12 | ✅ Suportado | 6.0 |
-| Rocky Linux | 8, 9 | ✅ Testado | 6.4 |
-| RHEL | 7, 8, 9 | ✅ Suportado | 6.4 |
-| CentOS | 7, 8 | ✅ Suportado | 6.4 |
-| AlmaLinux | 8, 9 | ✅ Suportado | 6.4 |
+| Debian | 11 | ✅ Suportado | 7.0 |
+| Debian | 12 | ✅ Suportado | 7.0 |
+| Rocky Linux | 8, 9 | ✅ Testado | 7.0 |
+| RHEL | 7, 8, 9 | ✅ Suportado | 7.0 |
+| CentOS | 7, 8 | ✅ Suportado | 7.0 |
+| AlmaLinux | 8, 9 | ✅ Suportado | 7.0 |
 
 ---
 

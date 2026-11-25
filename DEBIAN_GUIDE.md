@@ -6,8 +6,8 @@ Este guia mostra como usar os scripts em sistemas Debian 11 e 12.
 
 | Versão | Status | Zabbix | Testado |
 |--------|--------|--------|---------|
-| Debian 11 (Bullseye) | ✅ Suportado | 6.0 | ✅ |
-| Debian 12 (Bookworm) | ✅ Suportado | 6.0 | ✅ |
+| Debian 11 (Bullseye) | ✅ Suportado | 7.0 | ✅ |
+| Debian 12 (Bookworm) | ✅ Suportado | 7.0 | ✅ |
 
 ## 🚀 Instalação Rápida
 
@@ -39,19 +39,19 @@ sudo ./install_zabbix.sh
 # O script detecta automaticamente:
 - Sistema: Debian
 - Versão: 11 ou 12
-- Repositório apropriado: Zabbix 6.0 para Debian
+- Repositório oficial do Zabbix no branch definido em `ZABBIX_BRANCH` (padrão `7.0`)
 ```
 
 ### Processo de Instalação
 
 1. **Baixa o repositório oficial do Zabbix**
    ```bash
-   wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_latest_6.0+debian12_all.deb
+   wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.0+debian12_all.deb
    ```
 
 2. **Instala o repositório**
    ```bash
-   dpkg -i zabbix-release_latest_6.0+debian12_all.deb
+   dpkg -i zabbix-release_latest_7.0+debian12_all.deb
    apt update
    ```
 
@@ -79,11 +79,11 @@ sudo ./install_zabbix.sh
 Edite `config/settings.conf`:
 
 ```bash
-# Para usar Zabbix 7.0 no Debian (se disponível)
-ZABBIX_VERSION_DEBIAN="7.0"
+# Branch do Zabbix (deve ser o mesmo major.minor do servidor)
+ZABBIX_BRANCH="7.0"
 
-# Para usar Zabbix 6.0 (padrão)
-ZABBIX_VERSION_DEBIAN="6.0"
+# Modo de instalação: auto (pacote, com fallback estático), package ou static
+ZABBIX_INSTALL_MODE="auto"
 ```
 
 ### Alterar Servidor Zabbix
@@ -320,7 +320,7 @@ done
 
 ## 📚 Referências
 
-- [Documentação Oficial do Zabbix para Debian](https://www.zabbix.com/download?zabbix=6.0&os_distribution=debian&os_version=12&components=agent)
+- [Documentação Oficial do Zabbix para Debian](https://www.zabbix.com/download?zabbix=7.0&os_distribution=debian&os_version=12&components=agent)
 - [Debian Wiki - Zabbix](https://wiki.debian.org/Zabbix)
 - [Zabbix Agent Configuration](https://www.zabbix.com/documentation/current/en/manual/appendix/config/zabbix_agentd)
 

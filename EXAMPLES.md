@@ -11,7 +11,7 @@ Setup completo de um novo servidor Linux:
 ```bash
 # Executar instalação completa via menu
 sudo ./installer.sh
-# Selecionar: 5) Executar Tudo (Modo Completo)
+# Selecionar: 6) Executar Tudo (Modo Completo)
 ```
 
 Ou passo a passo:

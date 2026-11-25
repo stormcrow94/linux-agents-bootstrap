@@ -208,6 +208,6 @@ tail -f logs/installer_*.log
 ## 9. Maintenance Notes
 
 - Keep `settings.conf` aligned with infrastructure endpoints
-- Validate package versions periodically (`ZABBIX_VERSION_*`, `WAZUH_VERSION`)
+- Validate package versions periodically (`ZABBIX_BRANCH`, `ZABBIX_RPM_BRANCH`, `WAZUH_VERSION`)
 - Review documentation links whenever files are added/removed
 - If domain support is needed on RPM-based distros, extend `register_domain.sh` with package-manager abstraction

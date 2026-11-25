@@ -22,7 +22,7 @@ sudo ./installer.sh
 
 ```bash
 sudo ./installer.sh
-# Selecione: 5) Executar Tudo (Modo Completo)
+# Selecione: 6) Executar Tudo (Modo Completo)
 # Siga as instruções na tela
 ```
 

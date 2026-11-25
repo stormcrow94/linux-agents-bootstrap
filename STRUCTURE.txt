@@ -1,6 +1,7 @@
 shell-install-applications-script/
 |
 |-- installer.sh                 # Menu principal interativo
+|-- bootstrap.sh                 # Instalacao em um comando a partir do GitHub
 |-- install_zabbix.sh            # Instala e configura Zabbix Agent
 |-- install_wazuh.sh             # Instala e configura Wazuh Agent
 |-- register_domain.sh           # Registro em dominio (Realmd/SSSD)
@@ -14,6 +15,10 @@ shell-install-applications-script/
 |-- config/
 |   `-- settings.conf            # Configuracoes centralizadas do projeto
 |
+|-- assets/
+|   |-- banner.png               # Banner do README
+|   `-- social-preview.png       # Imagem de social preview (1280x640)
+|
 |-- logs/                        # Gerado em runtime pelos scripts
 |
 |-- README.md                    # Visao geral e uso rapido
@@ -24,6 +29,7 @@ shell-install-applications-script/
 |-- WAZUH_IMPLEMENTATION.md      # Implementacao detalhada do Wazuh
 |-- DEBIAN_GUIDE.md              # Guia especifico para Debian
 |-- EXAMPLES.md                  # Exemplos praticos
+|-- CONTRIBUTING.md              # Guia de contribuicao
 |-- STRUCTURE.txt                # Estrutura atual do repositorio
 |
 |-- .github/

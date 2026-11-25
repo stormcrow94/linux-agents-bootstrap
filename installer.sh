@@ -3,7 +3,7 @@
 #==============================================================================
 # Menu Principal do Instalador
 # Interface interativa para executar scripts de instalação e configuração
-# Sistema Linux - Zabbix, Domínio, Kaspersky e mais
+# Sistema Linux - Zabbix, Wazuh, Sophos, Domínio e mais
 #==============================================================================
 
 # Obter o diretório do script

@@ -25,7 +25,7 @@ Script completo para instalação automática do Wazuh Agent com:
 - ✅ Verificação completa pós-instalação
 - ✅ Integração total com biblioteca comum (logging, cores, validações)
 
-**Localização**: `/home/luciano/Documents/shell-install-applications-script/install_wazuh.sh`  
+**Localização**: `install_wazuh.sh` (raiz do repositório)  
 **Permissões**: Executável (chmod +x)
 
 ### 2. Configurações Adicionadas
@@ -61,7 +61,7 @@ O arquivo `installer.sh` foi atualizado com:
 1) Instalar Zabbix Agent
 2) Configurar Hostname
 3) Instalar Wazuh Agent        ← NOVO
-4) Instalar Kaspersky
+4) Instalar Sophos
 5) Registrar no Domínio
 6) Executar Tudo (Modo Completo)
 7) Configurações
@@ -273,7 +273,7 @@ O script utiliza as seguintes funções de `lib/common.sh`:
 
 1. **Testar a instalação**:
    ```bash
-   cd /home/luciano/Documents/shell-install-applications-script
+   cd shell-install-applications-script
    sudo ./install_wazuh.sh
    ```
 
