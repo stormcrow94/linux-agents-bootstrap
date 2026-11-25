@@ -2,7 +2,8 @@
 #==============================================================================
 # register_domain.sh — Integração ao Active Directory via realmd/SSSD
 #
-# Versão 2.0 — compatível com Ubuntu 22.04 / 24.04 e Debian 12
+# Versão 2.1 — compatível com Ubuntu 20.04/22.04/24.04, Debian 11/12 e
+#               RHEL/Rocky/Alma 8/9 (detecta apt ou dnf/yum)
 #
 # Correções em relação à versão anterior:
 #   * Não aborta silenciosamente no meio (remoção do "set -e" global)
@@ -18,7 +19,7 @@
 #   * Valida o grupo no AD antes de ativar access_provider = simple
 #     (evita bloquear todo o acesso por grupo inexistente)
 #   * sudoers validado com visudo e sem aceitar senha como nome de grupo
-#   * Cria home via pam-auth-update (padrão Debian/Ubuntu)
+#   * Home criada via pam-auth-update (Debian/Ubuntu) ou authselect (RHEL)
 #
 # Uso interativo:
 #   sudo ./register_domain.sh
@@ -68,9 +69,28 @@ section() {
 [ "$EUID" -eq 0 ] || die "Execute como root: sudo $0"
 [ -r /etc/os-release ] || die "/etc/os-release não encontrado"
 . /etc/os-release
-case "${ID:-}" in
-    ubuntu|debian) : ;;
-    *) warn "Distribuição '${ID:-desconhecida}' não testada. Continuando mesmo assim." ;;
+
+# Família da distribuição e gerenciador de pacotes (mesma lógica de lib/common.sh)
+case "${ID:-} ${ID_LIKE:-}" in
+    *debian*|*ubuntu*)                          DISTRO_FAMILY="debian" ;;
+    *rhel*|*fedora*|*centos*|*rocky*|*almalinux*) DISTRO_FAMILY="rhel" ;;
+    *)                                          DISTRO_FAMILY="unknown" ;;
+esac
+
+if command -v apt-get >/dev/null 2>&1; then
+    PKG_MGR="apt"
+elif command -v dnf >/dev/null 2>&1; then
+    PKG_MGR="dnf"
+elif command -v yum >/dev/null 2>&1; then
+    PKG_MGR="yum"
+else
+    PKG_MGR=""
+fi
+[ -n "$PKG_MGR" ] || die "Nenhum gerenciador de pacotes suportado (apt/dnf/yum) encontrado."
+
+case "$DISTRO_FAMILY" in
+    debian|rhel) log "Distribuição: ${PRETTY_NAME:-$ID} (pacotes via $PKG_MGR)" ;;
+    *) warn "Distribuição '${PRETTY_NAME:-${ID:-desconhecida}}' não testada; seguindo com $PKG_MGR." ;;
 esac
 
 section "Registro no Domínio — $(hostname -f 2>/dev/null || hostname)"
@@ -156,18 +176,30 @@ section "1/8 — Pacotes"
 export DEBIAN_FRONTEND=noninteractive
 
 pkg_installed() {
-    dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed"
+    case "$PKG_MGR" in
+        apt) dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed" ;;
+        *)   rpm -q "$1" >/dev/null 2>&1 ;;
+    esac
 }
 
-PACKAGES=(
-    realmd sssd sssd-tools libnss-sss libpam-sss adcli
-    samba-common-bin oddjob oddjob-mkhomedir krb5-user
-)
+if [ "$DISTRO_FAMILY" = "rhel" ]; then
+    PACKAGES=(
+        realmd sssd sssd-ad sssd-tools adcli samba-common-tools
+        oddjob oddjob-mkhomedir krb5-workstation
+    )
+else
+    PACKAGES=(
+        realmd sssd sssd-tools libnss-sss libpam-sss adcli
+        samba-common-bin oddjob oddjob-mkhomedir krb5-user
+    )
+fi
 
 log "Atualizando índice de pacotes..."
-if ! apt-get update -qq; then
-    warn "apt-get update retornou erro; tentando instalar com o índice atual."
-fi
+case "$PKG_MGR" in
+    apt) apt-get update -qq || warn "apt-get update retornou erro; tentando instalar com o índice atual." ;;
+    dnf) dnf -q makecache || warn "dnf makecache retornou erro; tentando com o cache atual." ;;
+    yum) yum -q makecache || warn "yum makecache retornou erro; tentando com o cache atual." ;;
+esac
 
 missing=()
 for p in "${PACKAGES[@]}"; do
@@ -176,15 +208,22 @@ done
 
 if [ ${#missing[@]} -gt 0 ]; then
     log "Instalando: ${missing[*]}"
-    if ! apt-get install -y --no-install-recommends "${missing[@]}"; then
-        die "Falha ao instalar pacotes. Verifique repositórios: apt-get update && apt-get install -f"
-    fi
+    case "$PKG_MGR" in
+        apt) apt-get install -y --no-install-recommends "${missing[@]}" \
+                || die "Falha ao instalar pacotes. Verifique repositórios: apt-get update && apt-get install -f" ;;
+        dnf) dnf install -y "${missing[@]}" \
+                || die "Falha ao instalar pacotes. Verifique repositórios: dnf makecache && dnf install -f" ;;
+        yum) yum install -y "${missing[@]}" \
+                || die "Falha ao instalar pacotes. Verifique repositórios: yum makecache && yum install -f" ;;
+    esac
 else
     ok "Todos os pacotes já estão instalados."
 fi
 
 # sssd-ad é dependência do metapacote sssd, mas garantimos explicitamente:
-pkg_installed sssd-ad || apt-get install -y sssd-ad || warn "Não foi possível instalar sssd-ad; o provedor AD pode faltar."
+if [ "$DISTRO_FAMILY" != "rhel" ]; then
+    pkg_installed sssd-ad || apt-get install -y sssd-ad || warn "Não foi possível instalar sssd-ad; o provedor AD pode faltar."
+fi
 
 ok "Pacotes prontos."
 
@@ -505,28 +544,51 @@ else
     die "sudoers não aplicado."
 fi
 
-# 7.4 Home directory no primeiro login
-if [ -f /usr/share/pam-configs/mkhomedir ]; then
-    if pam-auth-update --enable mkhomedir >/dev/null 2>&1; then
-        ok "pam_mkhomedir habilitado (pam-auth-update)."
-    else
-        warn "pam-auth-update --enable mkhomedir falhou."
-    fi
-elif ! grep -q "pam_mkhomedir.so" /etc/pam.d/common-session; then
-    echo "session optional pam_mkhomedir.so skel=/etc/skel umask=0077" >> /etc/pam.d/common-session
-    ok "pam_mkhomedir adicionado em /etc/pam.d/common-session."
-else
-    ok "pam_mkhomedir já configurado."
-fi
+# 7.4 Home directory no primeiro login e nsswitch
+case "$DISTRO_FAMILY" in
+    rhel)
+        # RHEL/Rocky/Alma: o authselect gerencia PAM e nsswitch em conjunto
+        if command -v authselect >/dev/null 2>&1; then
+            if authselect select sssd with-mkhomedir --force >/dev/null 2>&1; then
+                ok "authselect: perfil 'sssd with-mkhomedir' aplicado."
+            else
+                warn "authselect falhou; habilite mkhomedir manualmente."
+            fi
+        elif command -v authconfig >/dev/null 2>&1; then
+            if authconfig --enablemkhomedir --update >/dev/null 2>&1; then
+                ok "authconfig: mkhomedir habilitado."
+            else
+                warn "authconfig falhou."
+            fi
+        else
+            warn "authselect/authconfig ausentes; mkhomedir não configurado."
+        fi
+        ok "nsswitch.conf gerenciado pelo authselect."
+        ;;
+    *)
+        if [ -f /usr/share/pam-configs/mkhomedir ]; then
+            if pam-auth-update --enable mkhomedir >/dev/null 2>&1; then
+                ok "pam_mkhomedir habilitado (pam-auth-update)."
+            else
+                warn "pam-auth-update --enable mkhomedir falhou."
+            fi
+        elif ! grep -q "pam_mkhomedir.so" /etc/pam.d/common-session 2>/dev/null; then
+            echo "session optional pam_mkhomedir.so skel=/etc/skel umask=0077" >> /etc/pam.d/common-session
+            ok "pam_mkhomedir adicionado em /etc/pam.d/common-session."
+        else
+            ok "pam_mkhomedir já configurado."
+        fi
 
-# 7.5 nsswitch idempotente
-for db in passwd group shadow; do
-    if ! grep -Eq "^${db}:.*\bsss\b" /etc/nsswitch.conf; then
-        sed -i "s/^${db}:.*/& sss/" /etc/nsswitch.conf
-        log "nsswitch: '$db' agora usa sss."
-    fi
-done
-ok "nsswitch.conf consistente."
+        # nsswitch idempotente
+        for db in passwd group shadow; do
+            if ! grep -Eq "^${db}:.*\bsss\b" /etc/nsswitch.conf; then
+                sed -i "s/^${db}:.*/& sss/" /etc/nsswitch.conf
+                log "nsswitch: '$db' agora usa sss."
+            fi
+        done
+        ok "nsswitch.conf consistente."
+        ;;
+esac
 
 #------------------------------------------------------------------------------
 # 8. Verificação

@@ -17,12 +17,14 @@ O projeto pode ser executado por menu interativo (`installer.sh`) ou por scripts
 - Configuracao centralizada em `config/settings.conf`
 - Logs por execucao em `logs/installer_YYYYMMDD_HHMMSS.log`
 - Suporte para Ubuntu, Debian, RHEL, Rocky, CentOS e AlmaLinux (conforme script)
+- `bootstrap.sh` para instalar em servidor novo com um unico comando
 
 ## Estrutura atual do repositorio
 
 ```text
 .
 ├── installer.sh
+├── bootstrap.sh
 ├── install_zabbix.sh
 ├── install_wazuh.sh
 ├── register_domain.sh
@@ -72,6 +74,26 @@ Opcoes disponiveis:
 8. Ver Logs
 0. Sair
 
+## Instalacao em uma linha (servidor novo)
+
+Baixa o repositorio e abre o menu, sem clonar nada manualmente:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stormcrow94/shell-install-applications-script/main/bootstrap.sh -o /tmp/bootstrap.sh
+sudo bash /tmp/bootstrap.sh
+```
+
+Executar somente o registro no dominio:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stormcrow94/shell-install-applications-script/main/bootstrap.sh -o /tmp/bootstrap.sh
+sudo bash /tmp/bootstrap.sh --domain
+```
+
+Etapas isoladas: `--zabbix`, `--wazuh`, `--sophos`, `--hostname`, `--download-only`.
+Os arquivos ficam em `/opt/shell-install-applications-script` (use `--dir` para mudar) e
+`--keep-settings` preserva um `config/settings.conf` ja ajustado.
+
 ## Execucao por script individual
 
 ```bash
@@ -81,6 +103,24 @@ sudo ./hostname.sh
 sudo ./register_domain.sh
 sudo ./SophosSetup.sh
 ```
+
+### Registro no dominio
+
+`register_domain.sh` funciona em Ubuntu 20.04/22.04/24.04, Debian 11/12 e
+RHEL/Rocky/Alma 8/9. Ele detecta `apt` ou `dnf`/`yum`, valida DNS/SRV, relogio e
+portas antes do `realm join`, e e idempotente (pode ser executado de novo).
+
+```bash
+sudo DOMAIN=center.local \
+     ADMIN_USER=fortigate \
+     ADMIN_PASS_FILE=/root/.adpass \
+     ADMIN_GROUP=SUDOERS_NOMEDOSERVIDOR \
+     COMPUTER_OU='OU=Computadores,DC=center,DC=local' \
+     ./register_domain.sh
+```
+
+Sem variaveis ele pergunta dominio, usuario, senha, grupo e OU. O grupo informado
+recebe SSH e sudo (`/etc/sudoers.d/sudoers`) e e validado no AD antes de ser aplicado.
 
 ## Configuracao
 
