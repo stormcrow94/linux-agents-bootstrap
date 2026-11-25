@@ -94,6 +94,22 @@ Etapas isoladas: `--zabbix`, `--wazuh`, `--sophos`, `--hostname`, `--download-on
 Os arquivos ficam em `/opt/shell-install-applications-script` (use `--dir` para mudar) e
 `--keep-settings` preserva um `config/settings.conf` ja ajustado.
 
+### Zabbix Agent: pacote oficial ou binario estatico
+
+Em Debian/Ubuntu o agente vem do repositorio oficial (`repo.zabbix.com`) por padrao:
+
+| `ZABBIX_INSTALL_MODE` | Comportamento |
+| --- | --- |
+| `auto` (padrao) | tenta o pacote `.deb`; se o repo falhar, instala o tarball estatico |
+| `package` | somente pacote oficial (falha se o repo nao responder) |
+| `static` | somente tarball estatico (comportamento antigo) |
+
+O pacote tem suporte a TLS/PSK e IPv6 e recebe correcao de bibliotecas pelo `apt`. A
+configuracao gerada e a mesma nos dois modos (`Server`, `ServerActive`, `Hostname`,
+`HostMetadata`, `DebugLevel`, `LogFileSize`). Ao migrar um host que estava no estatico, o
+script move o unit antigo para `/etc/systemd/system/zabbix-agent.service.bak.<data>` e volta a
+usar o unit do pacote. RHEL/CentOS/Rocky/Alma continuam usando RPM oficial.
+
 ## Execucao por script individual
 
 ```bash

@@ -33,6 +33,12 @@ else
     ZABBIX_RPM_BRANCH="7.0"
 fi
 
+# Modo de instalacao em Debian/Ubuntu (pode ser definido em config/settings.conf):
+#   auto    - tenta o pacote oficial e cai para o tarball estatico se falhar (padrao)
+#   package - somente pacote oficial; falha se o repositorio nao responder
+#   static  - somente tarball estatico (comportamento anterior)
+ZABBIX_INSTALL_MODE="${ZABBIX_INSTALL_MODE:-auto}"
+
 #==============================================================================
 # Funções Específicas do Zabbix
 #==============================================================================
@@ -116,6 +122,117 @@ remove_zabbix_agent_package_if_installed() {
                     print_warning "Não foi possível remover o pacote zabbix-agent; o binário estático ainda será instalado"
                     log_warning "dnf/yum remove zabbix-agent falhou"
                 }
+            fi
+            ;;
+    esac
+}
+
+# Instalar zabbix-agent pelo repositorio oficial .deb (Debian/Ubuntu).
+# Usa o pacote distribuido (com TLS/IPv6 e libs do sistema) em vez do tarball estatico.
+# Preserva a configuracao existente (--force-confold); o create_zabbix_config roda depois.
+install_zabbix_package_debian() {
+    local branch os_id version_id release_url deb_path unit_backup ts
+
+    branch="${ZABBIX_BRANCH:-7.0}"
+    os_id=$(. /etc/os-release 2>/dev/null && echo "$ID")
+    version_id=$(. /etc/os-release 2>/dev/null && echo "$VERSION_ID")
+    ts=$(date +%Y%m%d_%H%M%S)
+
+    case "$os_id" in
+        ubuntu|debian) ;;
+        *)
+            print_error "Modo pacote suportado apenas em Debian/Ubuntu (detectado: ${os_id:-desconhecido})"
+            return 1
+            ;;
+    esac
+    if [ -z "$version_id" ]; then
+        print_error "Nao foi possivel ler VERSION_ID de /etc/os-release"
+        return 1
+    fi
+
+    print_info "Instalando Zabbix Agent via repositorio oficial (${os_id} ${version_id}, branch ${branch})..."
+    log_info "Instalacao via pacote: os=${os_id} versao=${version_id} branch=${branch}"
+
+    release_url="https://repo.zabbix.com/zabbix/${branch}/${os_id}/pool/main/z/zabbix-release/zabbix-release_latest_${branch}+${os_id}${version_id}_all.deb"
+    deb_path="/tmp/zabbix-release-${branch}-${os_id}${version_id}.deb"
+    rm -f "$deb_path"
+
+    print_info "Baixando zabbix-release..."
+    if ! download_zabbix_tarball "$release_url" "$deb_path"; then
+        print_error "Falha ao baixar $release_url"
+        log_error "Download do zabbix-release falhou: $release_url"
+        rm -f "$deb_path"
+        return 1
+    fi
+    if ! dpkg -i "$deb_path" >> "$LOG_FILE" 2>&1; then
+        print_error "Falha ao instalar zabbix-release"
+        log_error "dpkg -i zabbix-release falhou"
+        rm -f "$deb_path"
+        return 1
+    fi
+    rm -f "$deb_path"
+
+    print_info "Atualizando indices do apt..."
+    if ! DEBIAN_FRONTEND=noninteractive apt-get update >> "$LOG_FILE" 2>&1; then
+        print_warning "apt-get update retornou erro; tentando instalar o pacote mesmo assim"
+        log_warning "apt-get update falhou"
+    fi
+
+    print_info "Instalando pacote zabbix-agent (mantendo configuracao atual)..."
+    if ! DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            -o Dpkg::Options::="--force-confold" \
+            -o Dpkg::Options::="--force-confdef" \
+            zabbix-agent >> "$LOG_FILE" 2>&1; then
+        print_error "Falha ao instalar o pacote zabbix-agent"
+        log_error "apt-get install zabbix-agent falhou"
+        return 1
+    fi
+
+    if ! dpkg -l zabbix-agent 2>/dev/null | grep -q '^ii'; then
+        print_error "Pacote zabbix-agent nao consta como instalado apos o apt"
+        log_error "zabbix-agent ausente em dpkg -l apos a instalacao"
+        return 1
+    fi
+
+    # Diretorios usados pela configuracao gerada pelo instalador
+    mkdir -p /var/log/zabbix /etc/zabbix/zabbix_agentd.d >> "$LOG_FILE" 2>&1
+    chown -R zabbix:zabbix /var/log/zabbix /etc/zabbix/zabbix_agentd.d >> "$LOG_FILE" 2>&1 || true
+
+    # O unit criado pelo instalador estatico tem precedencia sobre o unit do pacote.
+    # Sem remove-lo, o systemd continuaria usando Type=simple do /etc/systemd/system.
+    if [ -f /etc/systemd/system/zabbix-agent.service ]; then
+        unit_backup="/etc/systemd/system/zabbix-agent.service.bak.${ts}"
+        print_info "Removendo unit do instalador estatico (backup: $unit_backup)..."
+        log_info "Unit customizado movido para $unit_backup"
+        if cp -a /etc/systemd/system/zabbix-agent.service "$unit_backup" >> "$LOG_FILE" 2>&1; then
+            rm -f /etc/systemd/system/zabbix-agent.service
+        else
+            print_warning "Nao foi possivel salvar backup do unit; mantendo o unit atual"
+            log_warning "Backup do unit customizado falhou; unit preservado"
+        fi
+        systemctl daemon-reload >> "$LOG_FILE" 2>&1 || true
+        systemctl reset-failed zabbix-agent >> "$LOG_FILE" 2>&1 || true
+    fi
+
+    print_success "Zabbix Agent instalado a partir do repositorio oficial (deb)"
+    log_success "zabbix-agent instalado via pacote oficial"
+    return 0
+}
+
+# Escolher entre pacote oficial e tarball estatico em Debian/Ubuntu
+install_zabbix_debian_family() {
+    case "${ZABBIX_INSTALL_MODE:-auto}" in
+        static)
+            install_zabbix_static_binary
+            ;;
+        package)
+            install_zabbix_package_debian
+            ;;
+        *)
+            if ! install_zabbix_package_debian; then
+                print_warning "Instalacao via pacote oficial falhou; usando binario estatico"
+                log_warning "Fallback para binario estatico apos falha no pacote oficial"
+                install_zabbix_static_binary
             fi
             ;;
     esac
@@ -419,8 +536,8 @@ configure_firewall() {
 install_zabbix_ubuntu() {
     print_header "Instalação do Zabbix Agent - Ubuntu"
     
-    if ! install_zabbix_static_binary; then
-        print_error "Falha ao instalar binários Zabbix (estático)"
+    if ! install_zabbix_debian_family; then
+        print_error "Falha ao instalar o Zabbix Agent (modo: ${ZABBIX_INSTALL_MODE:-auto})"
         return 1
     fi
     
@@ -450,8 +567,8 @@ install_zabbix_ubuntu() {
 install_zabbix_debian() {
     print_header "Instalação do Zabbix Agent - Debian"
     
-    if ! install_zabbix_static_binary; then
-        print_error "Falha ao instalar binários Zabbix (estático)"
+    if ! install_zabbix_debian_family; then
+        print_error "Falha ao instalar o Zabbix Agent (modo: ${ZABBIX_INSTALL_MODE:-auto})"
         return 1
     fi
     

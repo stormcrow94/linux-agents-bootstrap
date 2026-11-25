@@ -135,6 +135,7 @@ Important current limitation:
 | `ZABBIX_DEBUG_LEVEL` | Agent debug level | `3` |
 | `ZABBIX_LOG_SIZE` | Max log size MB | `10` |
 | `ZABBIX_BRANCH` | Zabbix LTS branch (must match server major.minor) | `7.0` |
+| `ZABBIX_INSTALL_MODE` | Debian/Ubuntu install path: `auto`, `package` or `static` | `auto` |
 | `ZABBIX_AGENT_VERSION` | Agent patch (`latest` = newest in branch via CDN) | `latest` |
 | `ZABBIX_STATIC_AGENT_URL` | Optional full tarball URL override | empty |
 | `ZABBIX_RPM_BRANCH` | Zabbix RPM repo branch for RHEL-like | `7.0` |
